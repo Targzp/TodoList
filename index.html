@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="ToList" content="ToDoList for myself">
+    <link rel="stylesheet" href="css/Todolist.css">
+    <title>Document</title>
+</head>
+<body>
+    <header>
+        <img src="img/Title.png" alt="Title">
+        <form action="" id="form">
+            <input type="text" name="task" id="task" placeholder="请输入待办任务" autocomplete="off" required>
+        </form>
+    </header>
+    <main>
+        <section>
+            <h2>
+                Doing
+                <span class="todocount">0</span>
+            </h2>
+            <div class="container Todo">
+                <p class="tips">
+                    你要完成的...
+                </p>
+            </div>
+        </section>
+        <section>
+            <h2>
+                Done
+                <span class="todocount">0</span>
+            </h2>
+            <div class="container Done">
+                <p class="tips">
+                   你已经完成的... 
+                </p>
+            </div>
+        </section>
+    </main>
+    <script src="js/Todolist.js"></script>
+</body>
+</html>
