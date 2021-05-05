@@ -1,6 +1,6 @@
 window.addEventListener("load",()=>{
     let hour,minute;
-    let i=0,j=0;
+    let i=0,j=0,n=0;
 
     //功能一：输入待办任务
     function enterDoing(event){
@@ -14,6 +14,10 @@ window.addEventListener("load",()=>{
         //获取输入的任务
         let task_input = document.querySelector("#task");
         let task_text = document.createTextNode(task_input.value);
+        let task = document.createElement("p");
+        task.appendChild(task_text);
+        task.id = `task${++n}`;
+        task.className = "task";
 
         //生成任务卡片
         let p = document.createElement("p");
@@ -61,7 +65,7 @@ window.addEventListener("load",()=>{
         let documentFragment = new DocumentFragment();
         documentFragment.appendChild(span);
         documentFragment.appendChild(done);
-        documentFragment.appendChild(task_text);
+        documentFragment.appendChild(task);
         documentFragment.appendChild(prior_img);
         documentFragment.appendChild(cancel_img);
         p.appendChild(documentFragment);
@@ -206,6 +210,27 @@ window.addEventListener("load",()=>{
                 break;
             case "none":
                 p_parent.previousElementSibling.style.borderLeftColor = "rgb(191,191,191)";
+                break;
+
+            //
+            case "task":
+                target.innerHTML = `<input class="rtask" id="rtask${target.id.slice(4)}" value="${target.firstChild.nodeValue}">`
+                let rinput = document.getElementById(`rtask${target.id.slice(4)}`);
+                rinput.style.width="90%";
+                rinput.flag = 1;
+                rinput.setSelectionRange(0,rinput.value.length);
+                rinput.focus();
+                break;
+            case "rtask":
+                if(target.flag==1){
+                    target.flag=0;
+                }else if(target.flag==0){
+                    if(!target.value){
+                        alert("内容不能为空!");
+                    }else{
+                        p.innerHTML = target.value;
+                    }
+                }
                 break;
         }
     }
