@@ -59,7 +59,7 @@ window.addEventListener("load",()=>{
             <li><a href="#" class="none">无优先级</a></li>
         `;
         prior_list.className = "prior_list";
-        prior_list.style.display = "none"; /* 默认为不可见 */
+        /* prior_list.style.display = "none"; */ /* 默认为不可见 */
 
         //前三个orphan节点先进入文档碎片，最后统一添加至 p 节点
         let documentFragment = new DocumentFragment();
@@ -68,6 +68,7 @@ window.addEventListener("load",()=>{
         documentFragment.appendChild(task);
         documentFragment.appendChild(prior_img);
         documentFragment.appendChild(cancel_img);
+        documentFragment.appendChild(prior_list);
         p.appendChild(documentFragment);
 
         //将待办栏初始化时使用的提示卡片隐藏
@@ -77,7 +78,6 @@ window.addEventListener("load",()=>{
         //将任务卡片和卡片优先级附栏添加到待办栏中
         let Todo = document.querySelector(".Todo");
         Todo.appendChild(p);
-        Todo.appendChild(prior_list);
 
         //重置表单
         document.forms[0].reset();
@@ -115,8 +115,8 @@ window.addEventListener("load",()=>{
                 if(p_parent === Todo){
 
                     //将任务优先级附栏保存至目标节点父节点的 nextUl 属性中
-                    p.nextUl = p.nextElementSibling;
-                    Todo.removeChild(p.nextElementSibling);
+                    p.nextUl = p.lastElementChild;
+                    p.removeChild(p.lastElementChild);
                     p.style.borderLeftColor = "transparent";
                     Todo.removeChild(p);
 
@@ -162,7 +162,7 @@ window.addEventListener("load",()=>{
 
                     Todo.appendChild(p);
                     //将这个结束任务之前保存至其 nextUl 的任务优先级附栏添加至待办栏中，且跟在这个任务后面
-                    Todo.appendChild(p.nextUl);
+                    p.appendChild(p.nextUl);
 
                     todocount[0].innerHTML = `${++i}`;
                 }
@@ -170,7 +170,6 @@ window.addEventListener("load",()=>{
             //点击删除按钮，删除任务
             case "cancel_img":
                 if(p_parent === Todo){
-                    Todo.removeChild(p.nextElementSibling);
                     Todo.removeChild(p);
                     todocount[0].innerHTML = `${--i}`;
 
@@ -189,30 +188,32 @@ window.addEventListener("load",()=>{
 
             //点击任务优先级按钮，显示任务优先级附栏
             case "prior_img":
-                if(p.nextElementSibling.style.display === "none"){
-                    p.nextElementSibling.style.display = "";
-                    p.style.marginBottom = 0;
-                }else{
-                    p.nextElementSibling.style.display = "none";
-                    p.style.marginBottom = "20px";
+                if(p.getElementsByClassName('prior_list')[0]){
+                    if(p.getElementsByClassName('prior_list')[0].style.transform === "scale(1)"){
+                        p.getElementsByClassName('prior_list')[0].style.transform = "scale(1,0)";
+                        p.style.marginBottom = "20px"; 
+                    }else{
+                        p.getElementsByClassName('prior_list')[0].style.transform = "scale(1)";
+                        p.style.marginBottom = "40px"; 
+                    }
                 }
                 break;
 
             //点击相应级别的优先级，设置任务卡片所对应优先级的视觉提示（这里是添加醒目的左边框颜色）
             case "high":
-                p_parent.previousElementSibling.style.borderLeftColor = "rgb(216,30,6)"; /* 这里用 previousElementSibling 是因为要设置的是任务优先级附栏之前也就是所跟着的任务卡片 */
+                p_parent.parentNode.style.borderLeftColor = "rgb(216,30,6)"; /* 这里用 previousElementSibling 是因为要设置的是任务优先级附栏之前也就是所跟着的任务卡片 */
                 break;
             case "middle":
-                p_parent.previousElementSibling.style.borderLeftColor = "rgb(244,234,42)";
+                p_parent.parentNode.style.borderLeftColor = "rgb(244,234,42)";
                 break;
             case "low":
-                p_parent.previousElementSibling.style.borderLeftColor = "rgb(18,150,219)";
+                p_parent.parentNode.style.borderLeftColor = "rgb(18,150,219)";
                 break;
             case "none":
-                p_parent.previousElementSibling.style.borderLeftColor = "rgb(191,191,191)";
+                p_parent.parentNode.style.borderLeftColor = "rgb(191,191,191)";
                 break;
 
-            //
+            //点击任务栏可以修改任务
             case "task":
                 target.innerHTML = `<input class="rtask" id="rtask${target.id.slice(4)}" value="${target.firstChild.nodeValue}">`
                 let rinput = document.getElementById(`rtask${target.id.slice(4)}`);
@@ -221,6 +222,7 @@ window.addEventListener("load",()=>{
                 rinput.setSelectionRange(0,rinput.value.length);
                 rinput.focus();
                 break;
+            //再次点击修改完成，若第一次输入点击（聚焦）不算修改完成，且内容不能为空
             case "rtask":
                 if(target.flag==1){
                     target.flag=0;
@@ -231,6 +233,40 @@ window.addEventListener("load",()=>{
                         p.innerHTML = target.value;
                     }
                 }
+                break;
+            
+            //点击导入按钮，导入外部任务
+            case 'outdata':
+                fetch('../list.txt')
+                    .then((response)=>response.text())
+                    .then((data)=>{
+                        let items = data.split('\r\n');
+                        let task_input = document.querySelector("#task");
+                        let tasks = document.querySelectorAll(".task");
+                        let Mevent = document.createEvent("HTMLEvents");
+                        Mevent.initEvent('submit',true,true,document.defaultView);
+                        let inputItems = items.filter((item)=>{
+                            if(tasks.length > 0){
+                                let flag = true;
+                                for(let task of tasks){
+                                    if(item === task.textContent){
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                                return flag;
+                            }else{
+                                return true;
+                            }
+                        })
+
+                        inputItems.forEach((inputItem)=>{
+                            if(inputItem.length>1){
+                                task_input.value = inputItem;
+                                document.forms[0].dispatchEvent(Mevent);
+                            }
+                        })
+                    })
                 break;
         }
     }

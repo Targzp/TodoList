@@ -28,6 +28,18 @@ header>form>input{
     border: 1px solid #ccc;
 }
 
+header>form{
+    position: relative;
+}
+
+.outdata{
+    width: 75px;
+    height: 40px;
+    position: absolute;
+    top: 2px;
+    right: -75px;
+}
+
 main{
     width: 80%;
     min-width: 400px;
@@ -108,8 +120,9 @@ main>section>h2>span{
 }
 
 .container>p.item{
+    position: relative;
     border-left: 5px solid transparent;
-    transition: 0.5s;    
+    transition: 100ms;    
 }
 
 .container>p.item:not(.Done>p):hover{
@@ -146,10 +159,17 @@ main>section>h2>span{
     color: rgb(158, 158, 158);
 }
 
-.container>ul.prior_list{
+.container>p>ul.prior_list{
+    position: absolute;
+    top: 100%;
+    left: 0px;
+    right: 5px;
+    transform: scale(1,0);
+    transform-origin: top center;
+    transition: transform 100ms ease-in-out;
     box-sizing: border-box;
     height: 30px;
-    width: 85%;
+    width: 95%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -157,44 +177,44 @@ main>section>h2>span{
     margin: 0px auto 20px auto;
     background-color: #d4d4d473;
     font-size: 12px;
-    box-shadow: inset 0px 5px 10px 0px rgba(209, 209, 209, 0.788);
+    box-shadow: inset 0px 5px 10px 0px rgba(236, 234, 234, 0.788);
     list-style-type: none;
 }
 
-.container>ul.prior_list>li{
+.container>p>ul.prior_list>li{
     list-style-type: none;
     padding-left: 18px;
     margin-left: 8px;
 }
 
-.container>ul.prior_list>li:nth-child(1){
+.container>p>ul.prior_list>li:nth-child(1){
     background-image: url(../img/高优先级.png);
     background-clip: padding-box;
     background-repeat: no-repeat;
     background-position: left center;
 }
 
-.container>ul.prior_list>li:nth-child(2){
+.container>p>ul.prior_list>li:nth-child(2){
     background-image: url(../img/中优先级.png);
     background-clip: padding-box;
     background-repeat: no-repeat;
     background-position: left center;
 }
 
-.container>ul.prior_list>li:nth-child(3){
+.container>p>ul.prior_list>li:nth-child(3){
     background-image: url(../img/低优先级.png);
     background-clip: padding-box;
     background-repeat: no-repeat;
     background-position: left center;
 }
-.container>ul.prior_list>li:nth-child(4){
+.container>p>ul.prior_list>li:nth-child(4){
     background-image: url(../img/无优先级.png);
     background-clip: padding-box;
     background-repeat: no-repeat;
     background-position: left center;
 }
 
-.container>ul.prior_list>li>a{
+.container>p>ul.prior_list>li>a{
     text-decoration: none;
     color: black;
 }
@@ -204,7 +224,7 @@ main>section>h2>span{
     filter: opacity(50%);
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 1050px) {
     main{
         grid-template-columns: 100%;
     }
