@@ -166,7 +166,7 @@ main>section>h2>span{
     right: 5px;
     transform: scale(1,0);
     transform-origin: top center;
-    transition: transform 100ms ease-in-out;
+    transition: transform 100ms linear;
     box-sizing: border-box;
     height: 30px;
     width: 95%;

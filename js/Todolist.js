@@ -1,6 +1,34 @@
 window.addEventListener("load",()=>{
     let hour,minute;
-    let i=0,j=0,n=0;
+    let i=0,j=0,n=1;
+    let alltasks = new Array();
+
+    //页面初始化从本地存储中提取任务
+    function initialTasks(){
+        if(localStorage.length > 0){
+            alltasks = JSON.parse(localStorage.getItem('task'));
+            let task_input = document.querySelector('#task');
+            let Mevent = document.createEvent("HTMLEvents");
+            Mevent.initEvent('submit',true,true,document.defaultView);
+            for(let x=0,len=alltasks.length;x<len;x++){
+                n = alltasks[x].title;
+                task_input.value = alltasks[x].value;
+                document.forms[0].dispatchEvent(Mevent);
+            }
+        }
+    }
+
+    //若任务中有完成的移动到结束栏
+    function initialDoneTasks(){
+        let Cevent = document.createEvent("MouseEvent");
+        Cevent.initMouseEvent('click',true,true,document.defaultView);
+        for(let x=0,len=alltasks.length;x<len;x++){
+            if(alltasks[x].done == true){
+                let done_task = document.getElementById(`task${alltasks[x].title}`);
+                done_task.parentNode.getElementsByClassName('done')[0].dispatchEvent(Cevent);
+            }
+        }
+    }
 
     //功能一：输入待办任务
     function enterDoing(event){
@@ -11,13 +39,21 @@ window.addEventListener("load",()=>{
         let todocount1 = document.querySelectorAll(".todocount")[0];
         todocount1.innerHTML = `${++i}`;
 
-        //获取输入的任务
+        //获取输入的任务并先存储到本地客户端
         let task_input = document.querySelector("#task");
         let task_text = document.createTextNode(task_input.value);
         let task = document.createElement("p");
         task.appendChild(task_text);
-        task.id = `task${++n}`;
+        task.id = `task${n}`;
         task.className = "task";
+
+        //如果是页面初始化从本地存储导入的任务不用再添加进与本地存储相关连的数组
+        if(!(alltasks.find((elem)=>elem.value==task_text.nodeValue))){
+            alltasks.push({title: n,value:task_text.nodeValue,done:false})
+            localStorage.setItem(`task`,JSON.stringify(alltasks));
+        }
+        n++;
+
 
         //生成任务卡片
         let p = document.createElement("p");
@@ -41,13 +77,11 @@ window.addEventListener("load",()=>{
         //生成取消按钮图片
         let cancel_img = document.createElement("img");
         cancel_img.src = "img/取消.png";
-        cancel_img.alt = "cancel";
         cancel_img.className = "cancel_img";
 
         //生成优先级按钮图片
         let prior_img = document.createElement("img");
         prior_img.src = "img/优先级.png";
-        prior_img.alt = "prior";
         prior_img.className = "prior_img";
 
         //生成优先级附栏
@@ -59,7 +93,6 @@ window.addEventListener("load",()=>{
             <li><a href="#" class="none">无优先级</a></li>
         `;
         prior_list.className = "prior_list";
-        /* prior_list.style.display = "none"; */ /* 默认为不可见 */
 
         //前三个orphan节点先进入文档碎片，最后统一添加至 p 节点
         let documentFragment = new DocumentFragment();
@@ -114,6 +147,16 @@ window.addEventListener("load",()=>{
                 //如果任务卡片的父节点是类名为 ToDo 的节点，则可知任务结束进入结束栏
                 if(p_parent === Todo){
 
+                    //
+                    let task = p.getElementsByClassName('task')[0];
+                    let id_number = task.id.slice(4);
+                    for(let x=0,len=alltasks.length;x<len;x++){
+                        if(alltasks[x].title == id_number){
+                            alltasks[x].done = true;
+                        }
+                    }
+                    localStorage.setItem('task',JSON.stringify(alltasks));
+
                     //将任务优先级附栏保存至目标节点父节点的 nextUl 属性中
                     p.nextUl = p.lastElementChild;
                     p.removeChild(p.lastElementChild);
@@ -124,7 +167,7 @@ window.addEventListener("load",()=>{
                     todocount[0].innerHTML = `${--i}`;
 
                     //如果就剩下一个隐藏的说明卡片，那就显示这张说明卡片
-                    if(Todo.childElementCount === 1){    
+                    if(Todo.childElementCount == 1){    
                         p_tips1.style.display = "";
                     }
 
@@ -145,11 +188,20 @@ window.addEventListener("load",()=>{
 
                 //如果任务卡片的父节点是类名为 Done 的节点，则可知结束栏的任务重回待办栏
                 }else if(p_parent === Done){
+                    let task = p.getElementsByClassName('task')[0];
+                    let id_number = task.id.slice(4);
+                    for(let x=0,len=alltasks.length;x<len;x++){
+                        if(alltasks[x].title == id_number){
+                            alltasks[x].done = false;
+                        }
+                    }
+                    localStorage.setItem('task',JSON.stringify(alltasks));
+
                     Done.removeChild(p);
 
                     todocount[1].innerHTML = `${--j}`;
 
-                    if(Done.childElementCount === 1){
+                    if(Done.childElementCount == 1){
                         p_tips2.style.display = "";
                     }
 
@@ -169,19 +221,41 @@ window.addEventListener("load",()=>{
                 break;
             //点击删除按钮，删除任务
             case "cancel_img":
+                let task = p.getElementsByClassName('task')[0];
                 if(p_parent === Todo){
+                    //根据任务序号删除与本地存储相关联的数组中的对应任务
+                    let id_number = task.id.slice(4);
+                    let del_index = alltasks.findIndex((elem)=>elem.title==id_number);
+                    alltasks.splice(del_index,1);
+                    localStorage.setItem('task',JSON.stringify(alltasks));
+                    
                     Todo.removeChild(p);
+                    
                     todocount[0].innerHTML = `${--i}`;
 
-                    if(Todo.childElementCount === 1){    
+                    if(Todo.childElementCount == 1){    
                         p_tips1.style.display = "";
                     }
+
+                    //如果待办栏和结束栏位空，将任务计数器置为默认值
+                    if(Todo.childElementCount==1 && Done.childElementCount==1){
+                        n = 1;
+                    }
                 }else if(p_parent === Done){
+                    let id_number = task.id.slice(4);
+                    let del_index = alltasks.findIndex((elem)=>elem.title==id_number);
+                    alltasks.splice(del_index,1);
+                    localStorage.setItem('task',JSON.stringify(alltasks));
+
                     Done.removeChild(p);
                     todocount[1].innerHTML = `${--j}`;
 
                     if(Done.childElementCount === 1){
                         p_tips2.style.display = "";
+                    }
+
+                    if(Todo.childElementCount==1 && Done.childElementCount==1){
+                        n = 1;
                     }
                 }
                 break;
@@ -272,6 +346,8 @@ window.addEventListener("load",()=>{
     }
 
     document.addEventListener("click",allClickEvents,false);
+    initialTasks();
+    initialDoneTasks();
 
     window.addEventListener("unload",()=>{
         document.forms[0].removeEventListener("submit",enterDoing,false);
